@@ -1,0 +1,108 @@
+---
+title: "COVID-19_DATA Final Project"
+author: "Ram"
+date: "2024-12-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+
+path_in <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/"
+file_names<-c("time_series_covid19_confirmed_global.csv","time_series_covid19_deaths_global.csv","time_series_covid19_confirmed_US.csv","time_series_covid19_deaths_US.csv")
+urls <- str_c(path_in,file_names)
+global_cases<-read_csv(urls[1])
+global_deaths<-read_csv(urls[2])
+US_cases<-read_csv(urls[3])
+US_deaths<-read_csv(urls[4])
+
+global_cases <- global_cases %>%
+  pivot_longer(cols = -c('Province/State','Country/Region','Lat','Long'),
+    names_to = "date",
+    values_to = "cases") %>%
+  select(-c('Lat','Long'))
+
+global_deaths <- global_deaths %>%
+  pivot_longer(cols = -c('Province/State','Country/Region','Lat','Long'),
+    names_to = "date",
+    values_to = "deaths") %>%
+  select(-c('Lat','Long'))
+
+global_joined <- global_cases %>%
+full_join(global_deaths) %>%
+rename(Country_Region = 'Country/Region', Province_State = 'Province/State') %>%
+mutate(date = mdy(date))
+
+plot_belguim_zoom_all <- global_joined %>% filter(`Country_Region` == "Belgium")
+plot_france_zoom_all <- global_joined %>% filter(`Country_Region` == "France")
+plot_spain_zoom_all <- global_joined %>% filter(`Country_Region` == "Spain")
+
+plot_belguim <- global_joined %>% filter(`Country_Region` == "Belgium" & date > '2021-09-30' & date < '2022-02-01')
+plot_france <- global_joined %>% filter(`Country_Region` == "France" & date > '2021-09-30' & date < '2022-02-01')
+plot_spain <- global_joined %>% filter(`Country_Region` == "Spain" & date > '2021-09-30' & date < '2022-02-01')
+
+plot_netherlands <- global_joined %>% filter(`Country_Region` == "Netherlands" & date > '2021-09-30' & date < '2022-02-01')
+
+```
+
+
+
+In this work, at first, I decided to get an over all look over Belgium, France and Spain\
+\
+I marked number-of-cases in BLUE and number-of-deaths in RED\
+\
+```{r ZOOM_ALL, echo=FALSE}
+plot_belguim_zoom_all  %>% ggplot() + geom_point(aes(x = date,y = cases/100),color = "blue") + geom_point(aes(x=date,y = deaths),color = "red")
+
+plot_france_zoom_all  %>% ggplot() + geom_point(aes(x = date,y = cases/100),color = "blue") + geom_point(aes(x=date,y = deaths),color = "red")
+
+plot_spain_zoom_all  %>% ggplot() + geom_point(aes(x = date,y = cases/100),color = "blue") + geom_point(aes(x=date,y = deaths),color = "red")
+
+```
+\
+
+\
+In all countries I noticed a ramp up in the cases right near the end of 2021\
+\
+So, I zoomed in between October and February for each country\
+\
+BULGIUM\
+\
+```{r BELGUIM, echo=FALSE}
+plot_belguim  %>% ggplot() + geom_point(aes(x = date,y = cases/100),color = "blue") + geom_point(aes(x=date,y = deaths),color = "red")
+```
+\
+The ramp up start in middle of October\
+\
+FRANCE\
+\
+```{r FRANCE, echo=FALSE}
+plot_france  %>% ggplot() + geom_point(aes(x = date,y = cases/100),color = "blue") + geom_point(aes(x=date,y = deaths),color = "red")
+```
+\
+The ramp up start in the beginning of December\
+\
+SPAIN\
+\
+```{r SPAIN, echo=FALSE}
+plot_spain  %>% ggplot() + geom_point(aes(x = date,y = cases/100),color = "blue") + geom_point(aes(x=date,y = deaths),color = "red")
+```
+\
+The ramp up start in the middle of November\
+\
+\
+I wanted to find out if near by countries will have the same ramp up\
+I did the same analyze for the Netherlands and expected to find a ramp up as well\
+\
+NETHERLANDS\
+\
+```{r Netherlands, echo=FALSE}
+plot_netherlands  %>% ggplot() + geom_point(aes(x = date,y = cases/100),color = "blue") + geom_point(aes(x=date,y = deaths),color = "red")
+```
+\
+I found that the ramp up start in the middle of October\
+\
+
